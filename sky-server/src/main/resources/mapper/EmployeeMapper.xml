@@ -2,4 +2,38 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.sky.mapper.EmployeeMapper">
+    <update id="statusConvert">
+        update sky_take_out.employee
+        <set>
+            <choose>
+                <when test="status == 1">
+                    status = 1
+                </when>
+                <when test="status == 0">
+                    status = 0
+                </when>
+            </choose>
+        </set>
+        where id = #{id}
+    </update>
+    <update id="updateEmp">
+        update sky_take_out.employee
+        set id_number = #{employeeDTO.idNumber},
+            username = #{employeeDTO.username},
+            name = #{employeeDTO.name},
+            phone = #{employeeDTO.phone},
+            sex = #{employeeDTO.sex},
+            update_time = now(),
+            update_user = #{userId}
+        where id = #{employeeDTO.id}
+    </update>
+
+
+    <select id="queryBypage" resultType="com.sky.entity.Employee">
+        select * from sky_take_out.employee
+        <where>
+            <if test="name != null">name like concat('%',#{name},'%')</if>
+        </where>
+        order by update_time desc
+    </select>
 </mapper>

@@ -1,8 +1,17 @@
 sky:
+  alioss:
+    access-key-id: LTAI5t6PdSdkWcdEnWJMSBKX
+    access-key-secret: 2u4RX2QOirLnAyjyAwG1x78g6Hj6Mg
+    bucket-name: learning-demo-bucket
+    endpoint: oss-cn-shanghai.aliyuncs.com
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     host: localhost
     port: 3306
     database: sky_take_out
     username: root
-    password: root
+    password: 159248
+
+
+
