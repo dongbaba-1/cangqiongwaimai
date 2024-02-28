@@ -11,4 +11,7 @@
         insert into sky_take_out.dish_flavor
         values (null,#{dishId},#{name},#{value})
     </insert>
+    <select id="queryDishByPage" resultType="com.sky.vo.DishVO">
+        select * from sky_take_out.dish
+    </select>
 </mapper>
