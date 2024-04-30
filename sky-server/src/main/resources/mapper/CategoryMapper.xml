@@ -41,7 +41,27 @@
         </where>
         order by sort asc
     </select>
-    <select id="queryById" resultType="com.sky.entity.Category">
-        select * from sky_take_out.category where type = #{type}
+
+    <select id="queryByType" resultType="com.sky.entity.Category">
+        select * from sky_take_out.category
+        <where>
+            <if test="type != null">
+            and type = #{type}
+            </if>
+        </where>
     </select>
+
+    <select id="queryDishByCategoryId" resultType="com.sky.entity.Dish">
+        select * from sky_take_out.dish
+        where category_id = #{id}
+    </select>
+    <select id="querySetmealByCategoryId" resultType="com.sky.entity.Setmeal">
+        select * from sky_take_out.setmeal
+        where category_id = #{id}
+    </select>
+    <select id="getCategoryNameById" resultType="java.lang.String">
+        select c.name from sky_take_out.category c
+        where c.id = #{categoryId}
+    </select>
+
 </mapper>

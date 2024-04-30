@@ -10,6 +10,8 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.ArrayList;
+
 @Mapper
 public interface EmployeeMapper {
 
@@ -25,6 +27,7 @@ public interface EmployeeMapper {
     @Insert("insert into sky_take_out.employee values (null,#{username},#{name},#{password}," +
             "#{phone},#{sex},#{idNumber},#{status},#{createTime},#{updateTime}," +
             "#{createUser},#{updateUser})")
+
     @AutoFill(value = OperationType.INSERT) //切入点在接口中描述
     void insertEmp(Employee employee);
 

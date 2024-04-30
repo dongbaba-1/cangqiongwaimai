@@ -2,11 +2,15 @@ package com.sky.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
+import com.sky.entity.Dish;
+import com.sky.entity.Setmeal;
+import com.sky.exception.DeletionNotAllowedException;
 import com.sky.mapper.CategoryMapper;
 import com.sky.result.PageResult;
 import com.sky.service.CategoryService;
@@ -65,11 +69,24 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void delCategory(Long id) {
-        categoryMapper.delCategory(id);
+        //查找dish表中是否有category_id为待删除分类的id的dish
+
+        List<Dish> dishList = categoryMapper.queryDishByCategoryId(id);
+        List<Setmeal> setmealList = categoryMapper.querySetmealByCategoryId(id);
+        if(!dishList.isEmpty()){
+            throw new DeletionNotAllowedException(MessageConstant.CATEGORY_BE_RELATED_BY_DISH);
+        }
+        else if(setmealList.isEmpty()){
+            throw new DeletionNotAllowedException(MessageConstant.CATEGORY_BE_RELATED_BY_SETMEAL);
+        }
+        else{
+            categoryMapper.delCategory(id);
+        }
+
     }
 
     @Override
     public List<Category> queryByType(Integer type) {
-        return categoryMapper.queryById(type);
+        return categoryMapper.queryByType(type);
     }
 }
