@@ -50,8 +50,8 @@ public class  CategoryController {
     @GetMapping("/page")
     @ApiOperation("分页查询分类")
     public Result<PageResult> queryCategoryByPage(@ModelAttribute CategoryPageQueryDTO categoryPageQueryDTO){
-        PageResult page = categoryService.queryCategoryByPage(categoryPageQueryDTO);
-        return Result.success(page);
+        PageResult pageResult = categoryService.queryCategoryByPage(categoryPageQueryDTO);
+        return Result.success(pageResult);
     }
 
     /**
