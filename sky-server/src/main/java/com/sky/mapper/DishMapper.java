@@ -53,4 +53,8 @@ public interface DishMapper {
      * @return
      */
     Integer countByMap(Map map);
+
+
+    @Select("select category_id from sky_take_out.dish where id = #{id}")
+    Integer getCategoryIdByDishId(Long id);
 }

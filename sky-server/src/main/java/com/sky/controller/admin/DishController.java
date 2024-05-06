@@ -30,8 +30,9 @@ public class DishController {
     private RedisTemplate redisTemplate;
     @PostMapping
     public Result insertDish(@RequestBody DishDTO dishDTO){
+        //先更新数据库
         dishService.insertDish(dishDTO);
-        //清理redis缓存,
+        //再删除对应redis缓存
         String key = "dish_" + dishDTO.getCategoryId();
         redisTemplate.delete(key);
         return Result.success();
@@ -48,10 +49,16 @@ public class DishController {
     @DeleteMapping
     @ApiOperation("批量删除菜品")
     public Result deleteDish(@RequestParam("ids")List<Long> ids){
+        //先更新数据库
         dishService.deleteDish(ids);
-        //清除全部缓存
-        Set keys = redisTemplate.keys("dish_*");
-        redisTemplate.delete(keys);
+        //再清除缓存
+        for (Long id : ids) {
+            Integer categoryId = dishService.getCategoryIdByDishId(id);
+            String deleteKey = "dish_" + categoryId.toString();
+            redisTemplate.delete(deleteKey);
+        }
+//        Set keys = redisTemplate.keys("dish_*");
+//        redisTemplate.delete(keys);
         return Result.success();
     }
 
@@ -67,11 +74,11 @@ public class DishController {
     @PutMapping
     @ApiOperation("修改菜品")
     public Result updateDish(@RequestBody DishDTO dishDTO){
+        //先更新数据库
         dishService.updateDish(dishDTO);
-
-        //清除全部缓存
-        Set keys = redisTemplate.keys("dish_*");
-        redisTemplate.delete(keys);
+        //清除对应缓存
+        String deleteKey = "dish_" + dishDTO.getCategoryId();
+        redisTemplate.delete(deleteKey);
 
         return Result.success();
     }
@@ -80,11 +87,13 @@ public class DishController {
     @ApiOperation("菜品启售、停售")
     public Result convertStatus(@PathVariable Integer status,
                                 @RequestParam("id") Long id){
+        //先更新数据库
         dishService.convertStatus(status,id);
 
-        //清除全部缓存
-        Set keys = redisTemplate.keys("dish_*");
-        redisTemplate.delete(keys);
+        //清除缓存
+        Integer categgoryId = dishService.getCategoryIdByDishId(id);
+        String deleteKey = "dish_" + categgoryId.toString();
+        redisTemplate.delete(deleteKey);
 
         return Result.success();
     }

@@ -1,8 +1,10 @@
 package com.sky.controller.user;
 
+import com.sky.constant.MessageConstant;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
+import com.sky.exception.OrderBusinessException;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
@@ -13,9 +15,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.DateFormat;
+import java.time.Duration;
+import java.util.UUID;
 
 @RestController("userOrderController")
 @Slf4j
@@ -27,11 +32,21 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     @PostMapping("/submit")
     @ApiOperation("用户下单接口")
     public Result<OrderSubmitVO> submitOrder(@RequestBody OrdersSubmitDTO ordersSubmitDTO){
         log.info("用户下单，参数：{}",ordersSubmitDTO);
         OrderSubmitVO orderSubmitVO = orderService.submitOrder(ordersSubmitDTO);
+
+        //生成UUID，存放进redis
+        String token = UUID.randomUUID().toString();
+        //15分钟不付款自动取消订单，同时删除redis中的该key
+        redisTemplate.opsForValue().setIfAbsent(token,"true", Duration.ofMinutes(15));
+
+        orderSubmitVO.setUuid(token);
 
         return Result.success(orderSubmitVO);
     }
@@ -57,7 +72,9 @@ public class OrderController {
 
     @PutMapping("/cancel/{id}")
     public Result cancelOrder(@PathVariable Long id)throws Exception{
+        //取消订单也应该要删除redis里的UUID
         log.info("取消订单：{}",id);
+
         orderService.cancleOrder(id);
         return Result.success();
     }
@@ -72,8 +89,21 @@ public class OrderController {
     @PutMapping("/payment")
     @ApiOperation("支付订单")
     public Result<String> payOrder(@RequestBody OrdersPaymentDTO ordersPaymentDTO){
-        String arriveTime = orderService.payOrder(ordersPaymentDTO);
+        String arriveTime;
+        //判断UUID是否存在，存在，删除该key，执行付款流程；不存在，则是重复付款
+        if(redisTemplate.opsForValue().get(ordersPaymentDTO.getUuid()) == null) {
+            //不存在,则是重复付款
+            throw new OrderBusinessException(MessageConstant.ORDER_ALREADY_PAIED);
+        }
+        else{
+            //存在，执行正常付款流程并删除该key
+            arriveTime = orderService.payOrder(ordersPaymentDTO);
+            Boolean isSuccess = redisTemplate.delete(ordersPaymentDTO.getUuid());
+            if(Boolean.TRUE.equals(isSuccess)){
+                log.info("成功删除redis中的key");
+            }
 
+        }
         return Result.success(arriveTime);
 
     }

@@ -11,4 +11,7 @@ public class OrdersPaymentDTO implements Serializable {
     //付款方式
     private Integer payMethod;
 
+    //UUID,幂等性校验
+    private String uuid;
+
 }

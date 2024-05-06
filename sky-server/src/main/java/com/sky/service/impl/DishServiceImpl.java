@@ -63,16 +63,10 @@ public class DishServiceImpl implements DishService {
         else{
             //删除菜品时关联的口味也要删除
             dishMapper.deleteDish(ids);
-            for (Long id : ids) {
-
-            }
-
         }
 
 
     }
-
-
 
     @Override
     public PageResult queryDishByPage(DishPageQueryDTO dishPageQueryDTO) {
@@ -156,5 +150,10 @@ public class DishServiceImpl implements DishService {
         }
 
         return dishVOList;
+    }
+
+    @Override
+    public Integer getCategoryIdByDishId(Long id) {
+        return dishMapper.getCategoryIdByDishId(id);
     }
 }
